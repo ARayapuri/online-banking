@@ -1,0 +1,79 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+
+      # ===============================
+      # CORS CONFIG (IMPORTANT)
+      # ===============================
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            allowedHeaders: "*"
+
+      # ===============================
+      # ROUTES
+      # ===============================
+      routes:
+
+        # ---------------------------------
+        # CUSTOMER SERVICE
+        # ---------------------------------
+        - id: customer-service
+          uri: lb://CUSTOMER-SERVICE
+          predicates:
+           # - Path=/customer-service/**
+            - Path=/api/customers/**
+          filters:
+            - RewritePath=/customer-service/(?<segment>.*), /${segment}
+
+        # ---------------------------------
+        # ACCOUNT SERVICE
+        # ---------------------------------
+        - id: account-service
+          uri: lb://ACCOUNT-SERVICE
+          predicates:
+            #- Path=/account-service/**
+            - Path=/api/accounts/**
+          filters:
+            - RewritePath=/account-service/(?<segment>.*), /${segment}
+
+        # ---------------------------------
+        # AUTH SERVICE
+        # ---------------------------------
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/auth-service/(?<segment>.*), /${segment}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+# ==================================
+# SWAGGER AGGREGATION CONFIG
+# ==================================
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+    urls:
+      - name: Customer Service
+        url: /customer-service/v3/api-docs
+      - name: Account Service
+        url: /account-service/v3/api-docs
+      - name: Auth Service
+        url: /auth-service/v3/api-docs
