@@ -24,3 +24,7 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean install
+
+      - name: Build Docker image for account-service
+        run: | 
+          docker build -t account-service:ci ./account-service
